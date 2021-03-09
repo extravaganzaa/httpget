@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
@@ -29,8 +28,7 @@ func NewClient(httpClient *http.Client, baseU string) *Client {
 	baseURL, _ := url.Parse(baseU)
 	jar, _ := cookiejar.New(nil)
 	httpClient.Jar = jar
-	c := &Client{HTTPClient: httpClient, BaseURL: baseURL}
-	return c
+	return &Client{HTTPClient: httpClient, BaseURL: baseURL}
 }
 
 // NewRequest creates a HTTP request
@@ -55,7 +53,6 @@ func (c *Client) NewRequest(method, urlStr string, json bool, headers map[string
 
 	if headers != nil {
 		for k, v := range headers {
-
 			req.Header.Set(k, v)
 		}
 	}
@@ -77,18 +74,9 @@ func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*htt
 	}
 	defer resp.Body.Close()
 
-	if v != nil {
-		if w, ok := v.(io.Writer); ok {
-			io.Copy(w, resp.Body)
-		} else {
-			decErr := json.NewDecoder(resp.Body).Decode(v)
-			if decErr == io.EOF {
-				decErr = nil // ignore EOF errors caused by empty response body
-			}
-			if decErr != nil {
-				err = decErr
-			}
-		}
+	decoder := json.NewDecoder(resp.Body)
+	if err = decoder.Decode(v); err != nil {
+		return resp, err
 	}
-	return resp, err
+	return resp, nil
 }
