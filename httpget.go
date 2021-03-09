@@ -59,9 +59,7 @@ func (c *Client) NewRequest(method, urlStr string, json bool, headers map[string
 			req.Header.Set(k, v)
 		}
 	}
-	if c.UserAgent != "" {
-		req.Header.Set("User-Agent", c.UserAgent)
-	}
+
 	return req, nil
 
 }
