@@ -16,7 +16,6 @@ import (
 type Client struct {
 	HTTPClient *http.Client
 	BaseURL    *url.URL
-	UserAgent  string
 }
 
 // NewClient returns a new Client
